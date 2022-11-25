@@ -21,20 +21,20 @@ type Post {
   title: String
   username: String
   comments: [Comment]
-@materializer (
-    query: "getCommentListbyid"
-    arguments: [{name: "post_id" , field:"id"}]
-  )
+    @materializer(
+      query: "getCommentListbyid"
+      arguments: [{ name: "post_id", field: "id" }]
+    )
   votes: [Vote]
-@materializer (
-    query: "getVoteListbyid"
-    arguments: [{name: "post_id" , field:"id"}]
-  )
+    @materializer(
+      query: "getVoteListbyid"
+      arguments: [{ name: "post_id", field: "id" }]
+    )
   subreddit: [Subreddit]
-  @materializer (
-    query: "getSubredditListbyid"
-    arguments: [{name: "id" , field:"subreddit_id"}]
-  )
+    @materializer(
+      query: "getSubredditListbyid"
+      arguments: [{ name: "id", field: "subreddit_id" }]
+    )
 }
 
 """
@@ -70,7 +70,7 @@ type Query {
       table: "comment"
       configuration: "postgresql_config"
     )
-      getCommentListbyid(post_id: ID!): [Comment]
+  getCommentListbyid(post_id: ID!): [Comment]
     @dbquery(
       type: "postgresql"
       query: """
@@ -112,7 +112,17 @@ type Query {
       configuration: "postgresql_config"
     )
 
-getPostListbytopic(topic: String!): [Post]
+  getPostByPostID(id: ID!): Post
+    @dbquery(
+      type: "postgresql"
+      query: """
+        SELECT * from "post"
+      where "post"."id" = $1
+      """
+      configuration: "postgresql_config"
+    )
+
+  getPostListbytopic(topic: String!): [Post]
     @dbquery(
       type: "postgresql"
       query: """
@@ -141,7 +151,17 @@ getPostListbytopic(topic: String!): [Post]
       table: "subreddit"
       configuration: "postgresql_config"
     )
-    getSubredditListbyid(id: ID!): [Subreddit]
+  getSubredditListLimit(limit: Int!): [Subreddit]
+    @dbquery(
+      type: "postgresql"
+      query: """
+      select * from "subreddit" 
+      order by "created_at" desc
+      limit $1
+      """
+      configuration: "postgresql_config"
+    )
+  getSubredditListbyid(id: ID!): [Subreddit]
     @dbquery(
       type: "postgresql"
       query: """
@@ -149,7 +169,7 @@ getPostListbytopic(topic: String!): [Post]
       """
       configuration: "postgresql_config"
     )
-    getSubredditListbytopic(topic: String!): [Subreddit]
+  getSubredditListbytopic(topic: String!): [Subreddit]
     @dbquery(
       type: "postgresql"
       query: """
@@ -167,6 +187,14 @@ getPostListbytopic(topic: String!): [Post]
       configuration: "postgresql_config"
     )
   " Queries for type 'Vote' "
+  getVoteListbypost(post_id: ID!): [Vote]
+    @dbquery(
+      type: "postgresql"
+      query: """
+      select * from "vote" where "post_id" = $1
+      """
+      configuration: "postgresql_config"
+    )
   getVoteList: [Vote]
     @dbquery(
       type: "postgresql"
@@ -183,7 +211,7 @@ getPostListbytopic(topic: String!): [Post]
       """
       configuration: "postgresql_config"
     )
-    getVoteListbyid(post_id: ID!): [Vote]
+  getVoteListbyid(post_id: ID!): [Vote]
     @dbquery(
       type: "postgresql"
       query: """
@@ -214,12 +242,7 @@ type Mutation {
       dml: DELETE
       configuration: "postgresql_config"
     )
-  insertComment(
-    username: String
-    post_id: ID
-    text: String
-    created_at: DateTime
-  ): Comment
+  insertComment(username: String!, post_id: ID!, text: String!): Comment
     @dbquery(
       type: "postgresql"
       schema: "public"
@@ -259,9 +282,6 @@ type Mutation {
       configuration: "postgresql_config"
     )
 
-
-
-    
   " Mutations for type 'Subreddit' "
   deleteSubreddit(topic: String!, created_at: DateTime!, id: ID!): Subreddit
     @dbquery(
@@ -294,12 +314,7 @@ type Mutation {
       dml: DELETE
       configuration: "postgresql_config"
     )
-  insertVote(
-    username: String
-    post_id: ID
-    created_at: DateTime
-    upvote: Boolean
-  ): Vote
+  insertVote(username: String, post_id: ID, upvote: Boolean): Vote
     @dbquery(
       type: "postgresql"
       schema: "public"

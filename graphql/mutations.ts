@@ -1,5 +1,37 @@
 import { gql } from "@apollo/client";
 
+
+export const addvote = gql`
+  mutation Mymutation($username: String!, $post_id: ID!, $upvote: Boolean!) {
+    insertVote(username: $username, post_id: $post_id, upvote: $upvote) {
+      created_at
+      id
+      post_id
+      upvote
+      username
+    }
+  }
+`;
+
+
+
+export const addcomment = gql`
+mutation Mymutation(
+  $post_id: ID! , $username: String! , $text:String!  ) {
+  insertComment(
+    post_id:$post_id, text:$text, username: $username
+    ){
+      created_at
+    id
+    post_id
+    text
+    username
+    }
+  
+}
+`
+
+
 export const addpost = gql`
 mutation Mymutation (
     $body: String!
